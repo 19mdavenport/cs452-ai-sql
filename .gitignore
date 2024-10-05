@@ -1,0 +1,4 @@
+.idea
+__pycache__
+
+openai_key.json
