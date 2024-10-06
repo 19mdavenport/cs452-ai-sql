@@ -1,0 +1,146 @@
+[
+  {
+    "question": "How many people participated in events?",
+    "sql": "\nSELECT COUNT(DISTINCT person_id) AS participant_count\nFROM EventParticipant;\n",
+    "sql_output": [
+      [
+        11
+      ]
+    ],
+    "interpreted_answer": "11 people participated in events."
+  },
+  {
+    "question": "What is the most common event type, and how many events of that occurred? In the event of a tie please list all applicable event types.",
+    "sql": "\nSELECT event_type, COUNT(*) AS event_count\nFROM Event\nGROUP BY event_type\nHAVING event_count = (\n    SELECT MAX(event_count)\n    FROM (\n        SELECT COUNT(*) AS event_count\n        FROM Event\n        GROUP BY event_type\n    )\n);\n",
+    "sql_output": [
+      [
+        "birth",
+        4
+      ],
+      [
+        "marriage",
+        4
+      ]
+    ],
+    "interpreted_answer": "The most common event types are 'birth' and 'marriage', with 4 events of each type."
+  },
+  {
+    "question": "Are there any locations without events that happened at those locations? If so, what are their names?",
+    "sql": "\nSELECT city, country \nFROM Location \nWHERE location_id NOT IN (SELECT location_id FROM Event);\n",
+    "sql_output": [
+      [
+        "Provo",
+        "United States"
+      ]
+    ],
+    "interpreted_answer": "Yes, there are locations without events that happened at those locations. The names are Provo, United States."
+  },
+  {
+    "question": "Are there any events with no particpants?",
+    "sql": "\nSELECT * FROM Event WHERE event_id NOT IN (SELECT event_id FROM EventParticipant);\n",
+    "sql_output": [],
+    "interpreted_answer": "No, there are no events with no participants."
+  },
+  {
+    "question": "Are there any people with no relatives? If so, what are their names?",
+    "sql": "\nSELECT first_name, last_name \nFROM Person \nWHERE person_id NOT IN (SELECT person_id FROM Relationship UNION SELECT related_person_id FROM Relationship);\n",
+    "sql_output": [],
+    "interpreted_answer": "There are no people with no relatives."
+  },
+  {
+    "question": "Who participated in the most events, and how many events did they participate in?",
+    "sql": "\nSELECT p.first_name, p.last_name, COUNT(ep.event_id) AS event_count\nFROM Person p\nJOIN EventParticipant ep ON p.person_id = ep.person_id\nGROUP BY p.person_id\nORDER BY event_count DESC\nLIMIT 1;\n",
+    "sql_output": [
+      [
+        "Sheila",
+        "Parker",
+        5
+      ]
+    ],
+    "interpreted_answer": "Sheila Parker participated in the most events, with a total of 5 events."
+  },
+  {
+    "question": "What are the names of the people who participated in the event that occurred farthest north?",
+    "sql": "\nSELECT p.first_name, p.last_name\nFROM Person p\nJOIN EventParticipant ep ON p.person_id = ep.person_id\nJOIN Event e ON ep.event_id = e.event_id\nJOIN Location l ON e.location_id = l.location_id\nWHERE l.latitude = (SELECT MAX(latitude) FROM Location);\n",
+    "sql_output": [
+      [
+        "Patrick",
+        "Spencer"
+      ]
+    ],
+    "interpreted_answer": "Patrick Spencer"
+  },
+  {
+    "question": "Which 3 events occurred farthest south, and who particpated in them?",
+    "sql": "\nSELECT e.event_id, e.event_type, e.event_date, l.latitude, p.first_name, p.last_name\nFROM Event e\nJOIN Location l ON e.location_id = l.location_id\nJOIN EventParticipant ep ON e.event_id = ep.event_id\nJOIN Person p ON ep.person_id = p.person_id\nORDER BY l.latitude ASC\nLIMIT 3;\n",
+    "sql_output": [
+      [
+        1,
+        "birth",
+        "1970-05-12",
+        -36.1833,
+        "Sheila",
+        "Parker"
+      ],
+      [
+        16,
+        "Learned to Surf",
+        "2000-09-23",
+        -27.9833,
+        "Mrs",
+        "Jones"
+      ],
+      [
+        15,
+        "Ate Brazilian Barbecue",
+        "2012-01-09",
+        -24.5833,
+        "Mrs",
+        "Jones"
+      ]
+    ],
+    "interpreted_answer": "The 3 events that occurred farthest south are:\n\n1. Event ID 1: \"birth\" on 1970-05-12 at latitude -36.1833, participated by Sheila Parker.\n2. Event ID 16: \"Learned to Surf\" on 2000-09-23 at latitude -27.9833, participated by Mrs. Jones.\n3. Event ID 15: \"Ate Brazilian Barbecue\" on 2012-01-09 at latitude -24.5833, participated by Mrs. Jones."
+  },
+  {
+    "question": "Who particpated in events occuring in Australia or Denmark, and when did they participate in these events? Please separate the events occurring in each country.",
+    "sql": "\nSELECT \n    p.first_name, \n    p.last_name, \n    e.event_date, \n    l.country \nFROM \n    EventParticipant ep\nJOIN \n    Event e ON ep.event_id = e.event_id\nJOIN \n    Person p ON ep.person_id = p.person_id\nJOIN \n    Location l ON e.location_id = l.location_id\nWHERE \n    l.country IN ('Australia', 'Denmark')\nORDER BY \n    l.country, \n    e.event_date;\n",
+    "sql_output": [
+      [
+        "Sheila",
+        "Parker",
+        "1970-05-12",
+        "Australia"
+      ],
+      [
+        "Mrs",
+        "Jones",
+        "2000-09-23",
+        "Australia"
+      ],
+      [
+        "Sheila",
+        "Parker",
+        "2014-11-04",
+        "Denmark"
+      ],
+      [
+        "Sheila",
+        "Parker",
+        "2014-12-15",
+        "Denmark"
+      ]
+    ],
+    "interpreted_answer": "**Participants in events occurring in Australia:**\n- Sheila Parker participated on 1970-05-12.\n- Mrs. Jones participated on 2000-09-23.\n\n**Participants in events occurring in Denmark:**\n- Sheila Parker participated on 2014-11-04.\n- Sheila Parker participated on 2014-12-15."
+  },
+  {
+    "question": "Which person has the most ancestors in the database, and how many ancesters did they have? Please include as many direct ancestors as possible, including grandparents, great-grandparents, and so on.",
+    "sql": "\nWITH RECURSIVE Ancestors AS (\n    SELECT p.person_id, r.related_person_id\n    FROM Person p\n    JOIN Relationship r ON p.person_id = r.person_id\n    WHERE r.relationship_type = 'Parent'\n\n    UNION ALL\n\n    SELECT p.person_id, r.related_person_id\n    FROM Person p\n    JOIN Relationship r ON p.person_id = r.person_id\n    JOIN Ancestors a ON a.related_person_id = r.person_id\n)\n\nSELECT a.person_id, COUNT(DISTINCT a.related_person_id) AS ancestor_count\nFROM Ancestors a\nGROUP BY a.person_id\nORDER BY ancestor_count DESC\nLIMIT 1;\n",
+    "sql_output": [
+      [
+        3,
+        3
+      ]
+    ],
+    "interpreted_answer": "Person with ID 3 has the most ancestors in the database, with a total of 3 ancestors."
+  }
+]
