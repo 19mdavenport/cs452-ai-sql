@@ -118,7 +118,7 @@ INSERT INTO EventParticipant (event_id, person_id) VALUES
 ((SELECT event_id FROM Event WHERE event_type = 'learned Java' AND event_date = '1890-10-05'), (SELECT person_id FROM Person WHERE first_name = 'Mrs' AND last_name = 'Rodham')),
 
 -- Frank Jones
-((SELECT event_id FROM Event WHERE event_type = 'birth' AND event_date = '1993-03-21'), (SELECT person_id FROM Person WHERE first_name = 'Frank' AND last_name = 'Jones')),
+((SELECT event_id FROM Event WHERE event_type = 'Caught a frog' AND event_date = '1993-03-21'), (SELECT person_id FROM Person WHERE first_name = 'Frank' AND last_name = 'Jones')),
 ((SELECT event_id FROM Event WHERE event_type = 'marriage' AND event_date = '1997-11-18'), (SELECT person_id FROM Person WHERE first_name = 'Frank' AND last_name = 'Jones')),
 
 -- Mrs. Jones
